@@ -17,6 +17,7 @@
   let currentRewardsElement = null;
   let historicFlagImageUrl = null; // HTTP URL from Python
   const pendingHistoricFlagRequest = new Map(); // Track pending requests
+  let isInChampSelect = false; // Track if we're in ChampSelect phase
   
   const CSS_RULES = `
     .skin-selection-item-information.loyalty-reward-icon--rewards.lu-historic-flag-active {
@@ -117,6 +118,35 @@
       handleHistoricStateUpdate(payload);
     } else if (payload.type === "local-asset-url") {
       handleLocalAssetUrl(payload);
+    } else if (payload.type === "phase-change") {
+      handlePhaseChange(payload);
+    }
+  }
+  
+  function handlePhaseChange(data) {
+    const wasInChampSelect = isInChampSelect;
+    // Check if we're entering ChampSelect phase
+    isInChampSelect = data.phase === "ChampSelect" || data.phase === "FINALIZATION";
+    
+    if (isInChampSelect && !wasInChampSelect) {
+      log("debug", "Entered ChampSelect phase - enabling plugin");
+      // Try to update flag when entering ChampSelect
+      if (historicModeActive) {
+        setTimeout(() => {
+          updateHistoricFlag();
+        }, 100);
+      }
+    } else if (!isInChampSelect && wasInChampSelect) {
+      log("debug", "Left ChampSelect phase - disabling plugin");
+      // Hide flag when leaving ChampSelect
+      if (currentRewardsElement) {
+        hideFlagOnElement(currentRewardsElement);
+        currentRewardsElement = null;
+      }
+      // Reset retry counters
+      if (updateHistoricFlag._retryCount) {
+        updateHistoricFlag._retryCount = 0;
+      }
     }
   }
   
@@ -129,8 +159,8 @@
       pendingHistoricFlagRequest.delete(HISTORIC_FLAG_ASSET_PATH);
       log("info", "Received historic flag image URL from Python", { url: url });
       
-      // Update the flag if it's currently active
-      if (historicModeActive) {
+      // Update the flag if it's currently active and we're in ChampSelect
+      if (isInChampSelect && historicModeActive) {
         updateHistoricFlag();
       }
     }
@@ -162,6 +192,11 @@
   }
   
   function findRewardsElement() {
+    // Only try to find elements when in ChampSelect
+    if (!isInChampSelect) {
+      return null;
+    }
+    
     // Try to find the rewards element in the selected skin item first
     const selectedItem = document.querySelector(".skin-selection-item.skin-selection-item-selected");
     if (selectedItem) {
@@ -192,6 +227,7 @@
       }
     }
     
+    // Only log if we're actually in ChampSelect (to avoid spam before entering)
     log("debug", "Rewards element not found anywhere");
     return null;
   }
@@ -218,10 +254,19 @@
   }
   
   function updateHistoricFlag() {
+    // Only try to update if we're in ChampSelect
+    if (!isInChampSelect) {
+      return;
+    }
+    
     // Always find the element in the currently selected skin (don't use cached element)
     const element = findRewardsElement();
     
     if (!element) {
+      // Only retry if we're still in ChampSelect
+      if (!isInChampSelect) {
+        return;
+      }
       log("debug", "Rewards element not found, will retry");
       // Retry after a short delay (max 5 retries to avoid infinite loop)
       if (!updateHistoricFlag._retryCount) {
@@ -229,7 +274,13 @@
       }
       if (updateHistoricFlag._retryCount < 5) {
         updateHistoricFlag._retryCount++;
-        setTimeout(updateHistoricFlag, 500);
+        setTimeout(() => {
+          if (isInChampSelect) { // Check again before retrying
+            updateHistoricFlag();
+          } else {
+            updateHistoricFlag._retryCount = 0; // Reset if we left ChampSelect
+          }
+        }, 500);
       } else {
         log("warn", "Rewards element not found after 5 retries, giving up");
         updateHistoricFlag._retryCount = 0; // Reset for next attempt
@@ -353,11 +404,10 @@
     // Setup WebSocket bridge
     setupBridgeSocket();
     
-    // Watch for DOM changes to find rewards element
+    // Watch for DOM changes to find rewards element (only when in ChampSelect)
     const observer = new MutationObserver(() => {
-      // Always try to update if historic mode is active (even if we have a cached element)
-      // This ensures the flag is shown even if the element wasn't found initially
-      if (historicModeActive) {
+      // Only try to update if in ChampSelect and historic mode is active
+      if (isInChampSelect && historicModeActive) {
         updateHistoricFlag();
       }
     });
@@ -370,17 +420,7 @@
     // Request historic flag image on init (for when it's needed)
     requestHistoricFlagImage();
     
-    // Initial check - ensure flag is hidden on startup (historic mode starts inactive)
-    // Also try again after delays to catch late DOM updates
-    setTimeout(() => {
-      // Force update to ensure flag is hidden if element exists
-      updateHistoricFlag();
-    }, 1000);
-    
-    // Try again after a longer delay to catch late DOM updates
-    setTimeout(() => {
-      updateHistoricFlag();
-    }, 3000);
+    // Don't try to update flag on init - wait for phase-change message to know if we're in ChampSelect
     
     log("info", "LU-HistoricMode plugin initialized");
   }
