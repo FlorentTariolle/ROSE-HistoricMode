@@ -329,7 +329,9 @@
     
     // Watch for DOM changes to find rewards element
     const observer = new MutationObserver(() => {
-      if (historicModeActive && !currentRewardsElement) {
+      // Always try to update if historic mode is active (even if we have a cached element)
+      // This ensures the flag is shown even if the element wasn't found initially
+      if (historicModeActive) {
         updateHistoricFlag();
       }
     });
@@ -343,10 +345,16 @@
     requestHistoricFlagImage();
     
     // Initial check - ensure flag is hidden on startup (historic mode starts inactive)
+    // Also try again after delays to catch late DOM updates
     setTimeout(() => {
       // Force update to ensure flag is hidden if element exists
       updateHistoricFlag();
     }, 1000);
+    
+    // Try again after a longer delay to catch late DOM updates
+    setTimeout(() => {
+      updateHistoricFlag();
+    }, 3000);
     
     log("info", "LU-HistoricMode plugin initialized");
   }
