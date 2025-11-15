@@ -148,7 +148,17 @@
     
     // Always update the flag when we receive a state update (even if state didn't change)
     // This ensures the flag is shown even if the element wasn't found initially
-    updateHistoricFlag();
+    // Use a small delay to ensure DOM is ready
+    setTimeout(() => {
+      updateHistoricFlag();
+    }, 100);
+    
+    // Also try again after a longer delay in case DOM updates are delayed
+    if (historicModeActive) {
+      setTimeout(() => {
+        updateHistoricFlag();
+      }, 1000);
+    }
   }
   
   function findRewardsElement() {
