@@ -303,24 +303,40 @@
   function hideFlagOnElement(element) {
     if (!element) return;
     
+    // Only remove our flag class
     element.classList.remove("lu-historic-flag-active");
-    element.style.removeProperty("background-image");
-    element.style.removeProperty("background-repeat");
-    element.style.removeProperty("background-size");
-    element.style.removeProperty("height");
-    element.style.removeProperty("width");
-    element.style.removeProperty("position");
-    element.style.removeProperty("right");
-    element.style.removeProperty("top");
-    element.style.removeProperty("pointer-events");
-    element.style.removeProperty("cursor");
-    element.style.removeProperty("-webkit-user-select");
-    element.style.removeProperty("list-style-type");
-    element.style.removeProperty("content");
-    // Explicitly hide the element (rewards icon is usually hidden by default)
-    element.style.setProperty("display", "none", "important");
-    element.style.setProperty("visibility", "hidden", "important");
-    element.style.setProperty("opacity", "0", "important");
+    
+    // Check if random flag is active - if so, don't remove shared styles
+    const hasRandomFlag = element.classList.contains("lu-random-flag-active");
+    
+    if (!hasRandomFlag) {
+      // No other flag is active - safe to remove all styles
+      element.style.removeProperty("background-image");
+      element.style.removeProperty("background-repeat");
+      element.style.removeProperty("background-size");
+      element.style.removeProperty("height");
+      element.style.removeProperty("width");
+      element.style.removeProperty("position");
+      element.style.removeProperty("right");
+      element.style.removeProperty("top");
+      element.style.removeProperty("pointer-events");
+      element.style.removeProperty("cursor");
+      element.style.removeProperty("-webkit-user-select");
+      element.style.removeProperty("list-style-type");
+      element.style.removeProperty("content");
+      // Explicitly hide the element (rewards icon is usually hidden by default)
+      element.style.setProperty("display", "none", "important");
+      element.style.setProperty("visibility", "hidden", "important");
+      element.style.setProperty("opacity", "0", "important");
+    } else {
+      // Random flag is active - only remove our background image, keep shared styles
+      // Check if the background-image is ours (contains historic_flag.png)
+      const bgImage = element.style.getPropertyValue("background-image");
+      if (bgImage && bgImage.includes("historic_flag.png")) {
+        element.style.removeProperty("background-image");
+      }
+      // Don't remove other styles as random flag needs them
+    }
   }
   
   function init() {
