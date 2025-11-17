@@ -1,9 +1,11 @@
 /**
- * LU-HistoricMode Plugin
- * Shows historic flag at rewards location based on Python state
+ * @name Rose-HistoricMode
+ * @author Rose Team
+ * @description Historic mode for Pengu Loader
+ * @link https://github.com/FlorentTariolle/Rose-HistoricMode
  */
 (function initHistoricMode() {
-  const LOG_PREFIX = "[LU-HistoricMode]";
+  const LOG_PREFIX = "[Rose-HistoricMode]";
   const REWARDS_SELECTOR = ".skin-selection-item-information.loyalty-reward-icon--rewards";
   const HISTORIC_FLAG_ASSET_PATH = "historic_flag.png";
   
