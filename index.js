@@ -425,7 +425,7 @@
 
     function resetTimer(el) {
       if (el._timer) clearTimeout(el._timer);
-      el._timer = setTimeout(() => el.remove(), 25000); // 5秒后移除
+      el._timer = setTimeout(() => el.remove(), 125000); // 125秒后移除
     }
   }
 
