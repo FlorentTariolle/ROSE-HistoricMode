@@ -70,8 +70,9 @@
       }
       
       // OPTIMIZATION: Parallel port discovery instead of sequential
+      // Start at DISCOVERY_START_PORT + 1 since 50000 was already tested above
       const portPromises = [];
-      for (let port = DISCOVERY_START_PORT; port <= DISCOVERY_END_PORT; port++) {
+      for (let port = DISCOVERY_START_PORT + 1; port <= DISCOVERY_END_PORT; port++) {
         portPromises.push(
           fetch(`http://localhost:${port}/bridge-port`, {
             signal: AbortSignal.timeout(300)
@@ -105,8 +106,9 @@
       }
       
       // Fallback: try old /port endpoint (parallel as well)
+      // Start at DISCOVERY_START_PORT + 1 since 50000 was already tested above
       const legacyPromises = [];
-      for (let port = DISCOVERY_START_PORT; port <= DISCOVERY_END_PORT; port++) {
+      for (let port = DISCOVERY_START_PORT + 1; port <= DISCOVERY_END_PORT; port++) {
         legacyPromises.push(
           fetch(`http://localhost:${port}/port`, {
             signal: AbortSignal.timeout(300)
