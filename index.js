@@ -6,7 +6,8 @@
  */
 (function initHistoricMode() {
   const LOG_PREFIX = "[ROSE-HistoricMode]";
-  const REWARDS_SELECTOR = ".skin-selection-item-information.loyalty-reward-icon--rewards";
+  const REWARDS_SELECTOR =
+    ".skin-selection-item-information.loyalty-reward-icon--rewards";
   const HISTORIC_FLAG_ASSET_PATH = "historic_flag.png";
   const SHOW_SKIN_NAME_ID = "historic-popup-layer";
   // WebSocket bridge for receiving historic state from Python
@@ -18,7 +19,7 @@
   let bridgeSocket = null;
   let bridgeReady = false;
   let bridgeQueue = [];
-  
+
   // Load bridge port with file-based discovery and localStorage caching
   async function loadBridgePort() {
     try {
@@ -29,16 +30,21 @@
         if (!isNaN(port) && port > 0) {
           // Verify cached port is still valid with shorter timeout
           try {
-            const response = await fetch(`http://localhost:${port}/bridge-port`, {
-              signal: AbortSignal.timeout(200)
-            });
+            const response = await fetch(
+              `http://localhost:${port}/bridge-port`,
+              {
+                signal: AbortSignal.timeout(200),
+              }
+            );
             if (response.ok) {
               const portText = await response.text();
               const fetchedPort = parseInt(portText.trim(), 10);
               if (!isNaN(fetchedPort) && fetchedPort > 0) {
                 BRIDGE_PORT = fetchedPort;
                 BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
-                console.log(`${LOG_PREFIX} Loaded bridge port from cache: ${BRIDGE_PORT}`);
+                console.log(
+                  `${LOG_PREFIX} Loaded bridge port from cache: ${BRIDGE_PORT}`
+                );
                 return true;
               }
             }
@@ -48,11 +54,11 @@
           }
         }
       }
-      
+
       // OPTIMIZATION: Try default port 50000 FIRST before scanning all ports
       try {
         const response = await fetch(`http://localhost:50000/bridge-port`, {
-          signal: AbortSignal.timeout(200)
+          signal: AbortSignal.timeout(200),
         });
         if (response.ok) {
           const portText = await response.text();
@@ -68,35 +74,39 @@
       } catch (e) {
         // Port 50000 not ready, continue to discovery
       }
-      
+
       // OPTIMIZATION: Parallel port discovery instead of sequential
       // Start at DISCOVERY_START_PORT + 1 since 50000 was already tested above
       const portPromises = [];
-      for (let port = DISCOVERY_START_PORT + 1; port <= DISCOVERY_END_PORT; port++) {
+      for (
+        let port = DISCOVERY_START_PORT + 1;
+        port <= DISCOVERY_END_PORT;
+        port++
+      ) {
         portPromises.push(
           fetch(`http://localhost:${port}/bridge-port`, {
-            signal: AbortSignal.timeout(300)
+            signal: AbortSignal.timeout(300),
           })
-          .then(response => {
-            if (response.ok) {
-              return response.text().then(portText => {
-                const fetchedPort = parseInt(portText.trim(), 10);
-                if (!isNaN(fetchedPort) && fetchedPort > 0) {
-                  return { port: fetchedPort, sourcePort: port };
-                }
-                return null;
-              });
-            }
-            return null;
-          })
-          .catch(() => null)
+            .then((response) => {
+              if (response.ok) {
+                return response.text().then((portText) => {
+                  const fetchedPort = parseInt(portText.trim(), 10);
+                  if (!isNaN(fetchedPort) && fetchedPort > 0) {
+                    return { port: fetchedPort, sourcePort: port };
+                  }
+                  return null;
+                });
+              }
+              return null;
+            })
+            .catch(() => null)
         );
       }
-      
+
       // Wait for first successful response
       const results = await Promise.allSettled(portPromises);
       for (const result of results) {
-        if (result.status === 'fulfilled' && result.value) {
+        if (result.status === "fulfilled" && result.value) {
           BRIDGE_PORT = result.value.port;
           BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
           localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
@@ -104,56 +114,64 @@
           return true;
         }
       }
-      
+
       // Fallback: try old /port endpoint (parallel as well)
       // Start at DISCOVERY_START_PORT + 1 since 50000 was already tested above
       const legacyPromises = [];
-      for (let port = DISCOVERY_START_PORT + 1; port <= DISCOVERY_END_PORT; port++) {
+      for (
+        let port = DISCOVERY_START_PORT + 1;
+        port <= DISCOVERY_END_PORT;
+        port++
+      ) {
         legacyPromises.push(
           fetch(`http://localhost:${port}/port`, {
-            signal: AbortSignal.timeout(300)
+            signal: AbortSignal.timeout(300),
           })
-          .then(response => {
-            if (response.ok) {
-              return response.text().then(portText => {
-                const fetchedPort = parseInt(portText.trim(), 10);
-                if (!isNaN(fetchedPort) && fetchedPort > 0) {
-                  return { port: fetchedPort, sourcePort: port };
-                }
-                return null;
-              });
-            }
-            return null;
-          })
-          .catch(() => null)
+            .then((response) => {
+              if (response.ok) {
+                return response.text().then((portText) => {
+                  const fetchedPort = parseInt(portText.trim(), 10);
+                  if (!isNaN(fetchedPort) && fetchedPort > 0) {
+                    return { port: fetchedPort, sourcePort: port };
+                  }
+                  return null;
+                });
+              }
+              return null;
+            })
+            .catch(() => null)
         );
       }
-      
+
       const legacyResults = await Promise.allSettled(legacyPromises);
       for (const result of legacyResults) {
-        if (result.status === 'fulfilled' && result.value) {
+        if (result.status === "fulfilled" && result.value) {
           BRIDGE_PORT = result.value.port;
           BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
           localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
-          console.log(`${LOG_PREFIX} Loaded bridge port (legacy): ${BRIDGE_PORT}`);
+          console.log(
+            `${LOG_PREFIX} Loaded bridge port (legacy): ${BRIDGE_PORT}`
+          );
           return true;
         }
       }
-      
-      console.warn(`${LOG_PREFIX} Failed to load bridge port, using default (50000)`);
+
+      console.warn(
+        `${LOG_PREFIX} Failed to load bridge port, using default (50000)`
+      );
       return false;
     } catch (e) {
       console.warn(`${LOG_PREFIX} Error loading bridge port:`, e);
       return false;
     }
   }
-  
+
   let historicModeActive = false;
   let currentRewardsElement = null;
   let historicFlagImageUrl = null; // HTTP URL from Python
   const pendingHistoricFlagRequest = new Map(); // Track pending requests
   let isInChampSelect = false; // Track if we're in ChampSelect phase
-  
+
   const CSS_RULES = `
     .skin-selection-item-information.loyalty-reward-icon--rewards.lu-historic-flag-active {
       background-repeat: no-repeat !important;
@@ -170,7 +188,7 @@
       content: " " !important;
     }
   `;
-  
+
   function log(level, message, data = null) {
     const payload = {
       type: "chroma-log",
@@ -180,32 +198,41 @@
       timestamp: Date.now(),
     };
     if (data) payload.data = data;
-    
-    if (bridgeReady && bridgeSocket && bridgeSocket.readyState === WebSocket.OPEN) {
+
+    if (
+      bridgeReady &&
+      bridgeSocket &&
+      bridgeSocket.readyState === WebSocket.OPEN
+    ) {
       bridgeSocket.send(JSON.stringify(payload));
     } else {
       bridgeQueue.push(JSON.stringify(payload));
     }
-    
+
     // Also log to console for debugging
-    const consoleMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+    const consoleMethod =
+      level === "error"
+        ? console.error
+        : level === "warn"
+        ? console.warn
+        : console.log;
     consoleMethod(`${LOG_PREFIX} ${message}`, data || "");
   }
-  
+
   function setupBridgeSocket() {
     if (bridgeSocket && bridgeSocket.readyState === WebSocket.OPEN) {
       return;
     }
-    
+
     try {
       bridgeSocket = new WebSocket(BRIDGE_URL);
-      
+
       bridgeSocket.onopen = () => {
         log("info", "WebSocket bridge connected");
         bridgeReady = true;
         flushBridgeQueue();
       };
-      
+
       bridgeSocket.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
@@ -214,11 +241,13 @@
           log("error", "Failed to parse bridge message", { error: e.message });
         }
       };
-      
+
       bridgeSocket.onerror = (error) => {
-        log("warn", "WebSocket bridge error", { error: error.message || "Unknown error" });
+        log("warn", "WebSocket bridge error", {
+          error: error.message || "Unknown error",
+        });
       };
-      
+
       bridgeSocket.onclose = () => {
         log("info", "WebSocket bridge closed, reconnecting...");
         bridgeReady = false;
@@ -230,7 +259,7 @@
       scheduleBridgeRetry();
     }
   }
-  
+
   function scheduleBridgeRetry() {
     setTimeout(() => {
       if (!bridgeReady) {
@@ -238,16 +267,21 @@
       }
     }, 3000);
   }
-  
+
   function flushBridgeQueue() {
-    if (bridgeQueue.length > 0 && bridgeReady && bridgeSocket && bridgeSocket.readyState === WebSocket.OPEN) {
+    if (
+      bridgeQueue.length > 0 &&
+      bridgeReady &&
+      bridgeSocket &&
+      bridgeSocket.readyState === WebSocket.OPEN
+    ) {
       bridgeQueue.forEach((message) => {
         bridgeSocket.send(message);
       });
       bridgeQueue = [];
     }
   }
-  
+
   function handleBridgeMessage(payload) {
     if (payload.type === "historic-state") {
       handleHistoricStateUpdate(payload);
@@ -257,12 +291,13 @@
       handlePhaseChange(payload);
     }
   }
-  
+
   function handlePhaseChange(data) {
     const wasInChampSelect = isInChampSelect;
     // Check if we're entering ChampSelect phase
-    isInChampSelect = data.phase === "ChampSelect" || data.phase === "FINALIZATION";
-    
+    isInChampSelect =
+      data.phase === "ChampSelect" || data.phase === "FINALIZATION";
+
     if (isInChampSelect && !wasInChampSelect) {
       log("debug", "Entered ChampSelect phase - enabling plugin");
       // Try to update flag when entering ChampSelect
@@ -284,41 +319,41 @@
       }
     }
   }
-  
+
   function handleLocalAssetUrl(data) {
     const assetPath = data.assetPath;
     const url = data.url;
-    
+
     if (assetPath === HISTORIC_FLAG_ASSET_PATH && url) {
       historicFlagImageUrl = url;
       pendingHistoricFlagRequest.delete(HISTORIC_FLAG_ASSET_PATH);
       log("info", "Received historic flag image URL from Python", { url: url });
-      
+
       // Update the flag if it's currently active and we're in ChampSelect
       if (isInChampSelect && historicModeActive) {
         updateHistoricFlag();
       }
     }
   }
-  
+
   function handleHistoricStateUpdate(data) {
     handleHistoricSkinNameUpdate(data);
     const wasActive = historicModeActive;
     historicModeActive = data.active === true;
-    
-    log("info", "Received historic state update", { 
-      active: historicModeActive, 
+
+    log("info", "Received historic state update", {
+      active: historicModeActive,
       wasActive: wasActive,
-      historicSkinId: data.historicSkinId
+      historicSkinId: data.historicSkinId,
     });
-    
+
     // Always update the flag when we receive a state update (even if state didn't change)
     // This ensures the flag is shown even if the element wasn't found initially
     // Use a small delay to ensure DOM is ready
     setTimeout(() => {
       updateHistoricFlag();
     }, 100);
-    
+
     // Also try again after a longer delay in case DOM updates are delayed
     if (historicModeActive) {
       setTimeout(() => {
@@ -326,30 +361,34 @@
       }, 1000);
     }
   }
-  
+
   function findRewardsElement() {
     // Only try to find elements when in ChampSelect
     if (!isInChampSelect) {
       return null;
     }
-    
+
     // Try to find the rewards element in the selected skin item first
-    const selectedItem = document.querySelector(".skin-selection-item.skin-selection-item-selected");
+    const selectedItem = document.querySelector(
+      ".skin-selection-item.skin-selection-item-selected"
+    );
     if (selectedItem) {
-      const info = selectedItem.querySelector(".skin-selection-item-information.loyalty-reward-icon--rewards");
+      const info = selectedItem.querySelector(
+        ".skin-selection-item-information.loyalty-reward-icon--rewards"
+      );
       if (info) {
         log("debug", "Found rewards element in selected skin item");
         return info;
       }
     }
-    
+
     // Try direct selector
     const element = document.querySelector(REWARDS_SELECTOR);
     if (element) {
       log("debug", "Found rewards element via direct selector");
       return element;
     }
-    
+
     // If not found, try to find it in the skin selection carousel
     const carousel = document.querySelector(".skin-selection-carousel");
     if (carousel) {
@@ -362,7 +401,7 @@
         }
       }
     }
-    
+
     // Only log if we're actually in ChampSelect (to avoid spam before entering)
     log("debug", "Rewards element not found anywhere");
     removeHistoricSkinName();
@@ -374,50 +413,437 @@
     // If an element with the same id already exists, directly update the content and reset the timer
     let popup = document.getElementById(id);
     if (popup) {
-      popup.querySelector('.popup-text').textContent = text;
+      const pTag = popup.querySelector("p");
+      if (pTag) {
+        pTag.textContent = text;
+      }
       resetTimer(popup);
       return;
     }
 
     // Create container
-    popup = document.createElement('div');
+    popup = document.createElement("div");
     popup.id = id;
 
     // Set styles
     Object.assign(popup.style, {
-      position: 'fixed',
-      bottom:'10%',
-      left: '55%',
-      zIndex: '999999',
-      background: '#1e2328',
-      color: '#b2a580',
-      padding: '7px 10px',
-      borderRadius: '4px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-      fontSize: '14px',
-      lineHeight: '1.4',
-      display: 'flex',
-      alignItems: 'center',
-      maxWidth: '300px',
-      fontWeight: 'bolder'
+      position: "fixed",
+      bottom: "calc(10% + 200px)",
+      left: "50%",
+      transform: "translate(-50%, 0)",
+      zIndex: "999999",
+      background: "transparent",
+      color: "#b2a580",
+      padding: "0",
+      margin: "0",
+      fontSize: "14px",
+      lineHeight: "1.4",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      maxWidth: "300px",
+      width: "auto",
+      boxSizing: "border-box",
     });
 
-    // Text
-    const textSpan = document.createElement('span');
-    textSpan.className = 'popup-text';
-    textSpan.textContent = text;
-    popup.appendChild(textSpan);
+    // Create toast-body div
+    const toastBody = document.createElement("div");
+    toastBody.className = "toast-body";
+    Object.assign(toastBody.style, {
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      boxSizing: "border-box",
+      position: "relative",
+      width: "auto",
+      margin: "0 auto",
+    });
 
-    // Close button
-    const closeBtn = document.createElement('span');
-    closeBtn.textContent = 'x';
+    // Create toast-content div
+    const toastContent = document.createElement("div");
+    toastContent.className = "toast-content";
+    Object.assign(toastContent.style, {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "100%",
+    });
+
+    // Create lol-uikit-content-block element
+    let contentBlock;
+    try {
+      contentBlock = document.createElement("lol-uikit-content-block");
+      contentBlock.className = "lol-ready-check-notification-party-dodge";
+      contentBlock.setAttribute("type", "notification");
+    } catch (e) {
+      contentBlock = document.createElement("div");
+      contentBlock.className =
+        "lol-uikit-content-block lol-ready-check-notification-party-dodge";
+      contentBlock.setAttribute("type", "notification");
+    }
+
+    // Set CSS custom properties
+    contentBlock.style.setProperty(
+      "--champion-preview-hover-animation-percentage",
+      "0%"
+    );
+    contentBlock.style.setProperty("--column-height", "95px");
+    contentBlock.style.setProperty(
+      "--font-display",
+      '"LoL Display","Times New Roman",Times,Baskerville,Georgia,serif'
+    );
+    contentBlock.style.setProperty(
+      "--font-body",
+      '"LoL Body",Arial,"Helvetica Neue",Helvetica,sans-serif'
+    );
+    contentBlock.style.setProperty(
+      "--plug-transform1",
+      "scale(1) rotate(0deg)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-transform2",
+      "scale(1.075) rotate(1deg)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-filter1",
+      "drop-shadow(0 0 0 rgb(66 60 40 / 0%))"
+    );
+    contentBlock.style.setProperty(
+      "--plug-filter2",
+      "drop-shadow(0 0 12px rgb(66 59 40 / 80%))"
+    );
+    contentBlock.style.setProperty("--plug-color1", "#423828");
+    contentBlock.style.setProperty("--plug-color2", "#fcf0d7");
+    contentBlock.style.setProperty(
+      "--plug-box-shadow1",
+      "0 0 0 rgb(66 58 40 / 0%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-box-shadow2",
+      "0 0 12px rgb(66 55 40 / 80%), inset 0 0 12px rgb(66 56 40 / 40%)"
+    );
+    contentBlock.style.setProperty("--plug-color-button", "#857a72");
+    contentBlock.style.setProperty("--plug-color-buttonDisabled", "#72655a");
+    contentBlock.style.setProperty("--plug-color-buttonHover", "#a89d8f");
+    contentBlock.style.setProperty(
+      "--plug-selected-item-border",
+      "2px solid #7d644b"
+    );
+    contentBlock.style.setProperty(
+      "--plug-selected-item-box-shadow",
+      "0 0 10px rgb(194 129 68 / 50%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-smoothGlow-box-shadow0",
+      "0 0 8px rgb(66 55 40 / 40%), 0 0 12px rgb(66 54 40 / 20%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-smoothGlow-box-shadow25",
+      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 57 40 / 10%), 0 0 30px rgb(66 55 40 / 20%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-smoothGlow-box-shadow50",
+      "0 0 12px rgb(66 56 40 / 60%), 0 0 20px rgb(66 54 40 / 30%), 0 0 30px rgb(66 55 40 / 10%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-smoothGlow-box-shadow75",
+      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 56 40 / 10%), 0 0 30px rgb(66 54 40 / 20%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-smoothGlow-box-shadow100",
+      "0 0 8px rgb(66 58 40 / 40%), 0 0 12px rgb(66 56 40 / 20%)"
+    );
+    contentBlock.style.setProperty(
+      "--plug-search-input-border",
+      "1px solid #533e1c"
+    );
+    contentBlock.style.setProperty(
+      "--plug-search-inputFocus-border-color",
+      "#81602b"
+    );
+    contentBlock.style.setProperty(
+      "--plug-search-inputFocus-box-shadow",
+      "0 0 10px rgba(84, 58, 96, 0.3)"
+    );
+    contentBlock.style.setProperty("--plug-jsbutton-color", "#81602b");
+    contentBlock.style.setProperty(
+      "--plug-soft-text-glow-kda1",
+      "rgb(255 155 0) 0px 0px 17px"
+    );
+    contentBlock.style.setProperty(
+      "--plug-soft-text-glow-kda2",
+      "rgb(255 143 0 / 37%) 0px 0px 76px"
+    );
+    contentBlock.style.setProperty("--plug-scrollable-color", "#785a28");
+
+    // Set regular CSS properties
+    Object.assign(contentBlock.style, {
+      WebkitUserSelect: "none",
+      position: "relative",
+      background: "#010a13",
+      boxShadow: "0 0 0 1px rgba(1,10,19,0.48)",
+      border: "2px solid transparent",
+      borderImage:
+        "linear-gradient(to top, #785a28 0, #463714 50%, #463714 100%) 1 stretch",
+      width: "auto",
+      display: "inline-block",
+      boxSizing: "border-box",
+    });
+
+    // Create paragraph with skin name (preserving case)
+    const pTag = document.createElement("p");
+    pTag.textContent = text;
+
+    // Create lol-uikit-dialog-frame-sub-border element
+    const subBorder = document.createElement("div");
+    subBorder.className = "lol-uikit-dialog-frame-sub-border";
+
+    // Set CSS custom properties
+    subBorder.style.setProperty(
+      "--champion-preview-hover-animation-percentage",
+      "0%"
+    );
+    subBorder.style.setProperty("--column-height", "95px");
+    subBorder.style.setProperty(
+      "--font-display",
+      '"LoL Display","Times New Roman",Times,Baskerville,Georgia,serif'
+    );
+    subBorder.style.setProperty(
+      "--font-body",
+      '"LoL Body",Arial,"Helvetica Neue",Helvetica,sans-serif'
+    );
+    subBorder.style.setProperty("--plug-transform1", "scale(1) rotate(0deg)");
+    subBorder.style.setProperty(
+      "--plug-transform2",
+      "scale(1.075) rotate(1deg)"
+    );
+    subBorder.style.setProperty(
+      "--plug-filter1",
+      "drop-shadow(0 0 0 rgb(66 60 40 / 0%))"
+    );
+    subBorder.style.setProperty(
+      "--plug-filter2",
+      "drop-shadow(0 0 12px rgb(66 59 40 / 80%))"
+    );
+    subBorder.style.setProperty("--plug-color1", "#423828");
+    subBorder.style.setProperty("--plug-color2", "#fcf0d7");
+    subBorder.style.setProperty(
+      "--plug-box-shadow1",
+      "0 0 0 rgb(66 58 40 / 0%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-box-shadow2",
+      "0 0 12px rgb(66 55 40 / 80%), inset 0 0 12px rgb(66 56 40 / 40%)"
+    );
+    subBorder.style.setProperty("--plug-color-button", "#857a72");
+    subBorder.style.setProperty("--plug-color-buttonDisabled", "#72655a");
+    subBorder.style.setProperty("--plug-color-buttonHover", "#a89d8f");
+    subBorder.style.setProperty(
+      "--plug-selected-item-border",
+      "2px solid #7d644b"
+    );
+    subBorder.style.setProperty(
+      "--plug-selected-item-box-shadow",
+      "0 0 10px rgb(194 129 68 / 50%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-smoothGlow-box-shadow0",
+      "0 0 8px rgb(66 55 40 / 40%), 0 0 12px rgb(66 54 40 / 20%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-smoothGlow-box-shadow25",
+      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 57 40 / 10%), 0 0 30px rgb(66 55 40 / 20%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-smoothGlow-box-shadow50",
+      "0 0 12px rgb(66 56 40 / 60%), 0 0 20px rgb(66 54 40 / 30%), 0 0 30px rgb(66 55 40 / 10%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-smoothGlow-box-shadow75",
+      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 56 40 / 10%), 0 0 30px rgb(66 54 40 / 20%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-smoothGlow-box-shadow100",
+      "0 0 8px rgb(66 58 40 / 40%), 0 0 12px rgb(66 56 40 / 20%)"
+    );
+    subBorder.style.setProperty(
+      "--plug-search-input-border",
+      "1px solid #533e1c"
+    );
+    subBorder.style.setProperty(
+      "--plug-search-inputFocus-border-color",
+      "#81602b"
+    );
+    subBorder.style.setProperty(
+      "--plug-search-inputFocus-box-shadow",
+      "0 0 10px rgba(84, 58, 96, 0.3)"
+    );
+    subBorder.style.setProperty("--plug-jsbutton-color", "#81602b");
+    subBorder.style.setProperty(
+      "--plug-soft-text-glow-kda1",
+      "rgb(255 155 0) 0px 0px 17px"
+    );
+    subBorder.style.setProperty(
+      "--plug-soft-text-glow-kda2",
+      "rgb(255 143 0 / 37%) 0px 0px 76px"
+    );
+    subBorder.style.setProperty("--plug-scrollable-color", "#785a28");
+
+    // Set regular CSS properties
+    Object.assign(subBorder.style, {
+      WebkitUserSelect: "none",
+      position: "absolute",
+      top: "0",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      pointerEvents: "none",
+    });
+
+    // Create before pseudo-element
+    const beforeElement = document.createElement("div");
+    beforeElement.setAttribute("data-pseudo", "before");
+    Object.assign(beforeElement.style, {
+      position: "absolute",
+      display: "block",
+      content: '""',
+    });
+    subBorder.insertBefore(beforeElement, subBorder.firstChild);
+
+    // Create after pseudo-element
+    const afterElement = document.createElement("div");
+    afterElement.setAttribute("data-pseudo", "after");
+    Object.assign(afterElement.style, {
+      position: "absolute",
+      display: "block",
+      content: '""',
+    });
+    subBorder.appendChild(afterElement);
+
+    // Build the nested structure
+    contentBlock.appendChild(pTag);
+    toastContent.appendChild(contentBlock);
+    toastContent.appendChild(subBorder);
+    toastBody.appendChild(toastContent);
+
+    // Create close button (cross) in top right corner
+    const closeBtn = document.createElement("span");
+    closeBtn.setAttribute("role", "button");
+    closeBtn.setAttribute("aria-label", "Close");
+
+    // Set CSS custom properties
+    closeBtn.style.setProperty(
+      "--champion-preview-hover-animation-percentage",
+      "0%"
+    );
+    closeBtn.style.setProperty("--column-height", "95px");
+    closeBtn.style.setProperty(
+      "--font-display",
+      '"LoL Display","Times New Roman",Times,Baskerville,Georgia,serif'
+    );
+    closeBtn.style.setProperty(
+      "--font-body",
+      '"LoL Body",Arial,"Helvetica Neue",Helvetica,sans-serif'
+    );
+    closeBtn.style.setProperty("--plug-transform1", "scale(1) rotate(0deg)");
+    closeBtn.style.setProperty(
+      "--plug-transform2",
+      "scale(1.075) rotate(1deg)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-filter1",
+      "drop-shadow(0 0 0 rgb(66 60 40 / 0%))"
+    );
+    closeBtn.style.setProperty(
+      "--plug-filter2",
+      "drop-shadow(0 0 12px rgb(66 59 40 / 80%))"
+    );
+    closeBtn.style.setProperty("--plug-color1", "#423828");
+    closeBtn.style.setProperty("--plug-color2", "#fcf0d7");
+    closeBtn.style.setProperty(
+      "--plug-box-shadow1",
+      "0 0 0 rgb(66 58 40 / 0%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-box-shadow2",
+      "0 0 12px rgb(66 55 40 / 80%), inset 0 0 12px rgb(66 56 40 / 40%)"
+    );
+    closeBtn.style.setProperty("--plug-color-button", "#857a72");
+    closeBtn.style.setProperty("--plug-color-buttonDisabled", "#72655a");
+    closeBtn.style.setProperty("--plug-color-buttonHover", "#a89d8f");
+    closeBtn.style.setProperty(
+      "--plug-selected-item-border",
+      "2px solid #7d644b"
+    );
+    closeBtn.style.setProperty(
+      "--plug-selected-item-box-shadow",
+      "0 0 10px rgb(194 129 68 / 50%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-smoothGlow-box-shadow0",
+      "0 0 8px rgb(66 55 40 / 40%), 0 0 12px rgb(66 54 40 / 20%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-smoothGlow-box-shadow25",
+      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 57 40 / 10%), 0 0 30px rgb(66 55 40 / 20%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-smoothGlow-box-shadow50",
+      "0 0 12px rgb(66 56 40 / 60%), 0 0 20px rgb(66 54 40 / 30%), 0 0 30px rgb(66 55 40 / 10%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-smoothGlow-box-shadow75",
+      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 56 40 / 10%), 0 0 30px rgb(66 54 40 / 20%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-smoothGlow-box-shadow100",
+      "0 0 8px rgb(66 58 40 / 40%), 0 0 12px rgb(66 56 40 / 20%)"
+    );
+    closeBtn.style.setProperty(
+      "--plug-search-input-border",
+      "1px solid #533e1c"
+    );
+    closeBtn.style.setProperty(
+      "--plug-search-inputFocus-border-color",
+      "#81602b"
+    );
+    closeBtn.style.setProperty(
+      "--plug-search-inputFocus-box-shadow",
+      "0 0 10px rgba(84, 58, 96, 0.3)"
+    );
+    closeBtn.style.setProperty("--plug-jsbutton-color", "#81602b");
+    closeBtn.style.setProperty(
+      "--plug-soft-text-glow-kda1",
+      "rgb(255 155 0) 0px 0px 17px"
+    );
+    closeBtn.style.setProperty(
+      "--plug-soft-text-glow-kda2",
+      "rgb(255 143 0 / 37%) 0px 0px 76px"
+    );
+    closeBtn.style.setProperty("--plug-scrollable-color", "#785a28");
+
+    // Set regular CSS properties
     Object.assign(closeBtn.style, {
-      marginLeft: '10px',
-      cursor: 'pointer',
-      fontWeight: 'bold'
+      WebkitUserSelect: "none",
+      display: "block",
+      height: "24px",
+      width: "24px",
+      position: "absolute",
+      top: "8px",
+      right: "8px",
+      cursor: "pointer",
+      borderRadius: "4px",
+      background: 'url("/fe/lol-uikit/images/close.png"), rgba(10,20,40,0.5)',
+      backgroundSize: "75% 75%, 100% 100%",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      zIndex: "10",
     });
+
     closeBtn.onclick = () => popup.remove();
-    popup.appendChild(closeBtn);
+    toastBody.appendChild(closeBtn);
+
+    popup.appendChild(toastBody);
 
     // Add to page rcp-fe-viewport-root
     document.body.appendChild(popup);
@@ -431,46 +857,55 @@
     }
   }
 
-  const handleHistoricSkinNameUpdate = (payload)=>{
-    if(payload.historicSkinName && payload.historicSkinName !== "None"){
+  const handleHistoricSkinNameUpdate = (payload) => {
+    if (payload.historicSkinName && payload.historicSkinName !== "None") {
       showSkinName(payload.historicSkinName);
     } else {
       removeHistoricSkinName();
     }
-  }
+  };
   function removeHistoricSkinName() {
     document.getElementById(SHOW_SKIN_NAME_ID)?.remove();
   }
   function requestHistoricFlagImage() {
     // Request historic flag image from Python (same way as Elementalist Lux icons)
-    if (!historicFlagImageUrl && !pendingHistoricFlagRequest.has(HISTORIC_FLAG_ASSET_PATH)) {
+    if (
+      !historicFlagImageUrl &&
+      !pendingHistoricFlagRequest.has(HISTORIC_FLAG_ASSET_PATH)
+    ) {
       pendingHistoricFlagRequest.set(HISTORIC_FLAG_ASSET_PATH, true);
-      
+
       const payload = {
         type: "request-local-asset",
         assetPath: HISTORIC_FLAG_ASSET_PATH,
         timestamp: Date.now(),
       };
-      
-      log("debug", "Requesting historic flag image from Python", { assetPath: HISTORIC_FLAG_ASSET_PATH });
-      
-      if (bridgeReady && bridgeSocket && bridgeSocket.readyState === WebSocket.OPEN) {
+
+      log("debug", "Requesting historic flag image from Python", {
+        assetPath: HISTORIC_FLAG_ASSET_PATH,
+      });
+
+      if (
+        bridgeReady &&
+        bridgeSocket &&
+        bridgeSocket.readyState === WebSocket.OPEN
+      ) {
         bridgeSocket.send(JSON.stringify(payload));
       } else {
         bridgeQueue.push(JSON.stringify(payload));
       }
     }
   }
-  
+
   function updateHistoricFlag() {
     // Only try to update if we're in ChampSelect
     if (!isInChampSelect) {
       return;
     }
-    
+
     // Always find the element in the currently selected skin (don't use cached element)
     const element = findRewardsElement();
-    
+
     if (!element) {
       // Only retry if we're still in ChampSelect
       if (!isInChampSelect) {
@@ -484,7 +919,8 @@
       if (updateHistoricFlag._retryCount < 5) {
         updateHistoricFlag._retryCount++;
         setTimeout(() => {
-          if (isInChampSelect) { // Check again before retrying
+          if (isInChampSelect) {
+            // Check again before retrying
             updateHistoricFlag();
           } else {
             updateHistoricFlag._retryCount = 0; // Reset if we left ChampSelect
@@ -496,29 +932,32 @@
       }
       return;
     }
-    
+
     // Reset retry count on success
     updateHistoricFlag._retryCount = 0;
-    
+
     // If we have a previously cached element that's different from the current one, hide it first
     if (currentRewardsElement && currentRewardsElement !== element) {
       log("debug", "Selected skin changed - hiding flag on previous element");
       hideFlagOnElement(currentRewardsElement);
     }
-    
+
     currentRewardsElement = element;
-    
+
     // Log element state for debugging
     const computedStyle = window.getComputedStyle(element);
-    const isVisible = computedStyle.display !== "none" && computedStyle.visibility !== "hidden" && computedStyle.opacity !== "0";
+    const isVisible =
+      computedStyle.display !== "none" &&
+      computedStyle.visibility !== "hidden" &&
+      computedStyle.opacity !== "0";
     log("debug", "Found rewards element", {
       display: computedStyle.display,
       visibility: computedStyle.visibility,
       opacity: computedStyle.opacity,
       isVisible: isVisible,
-      classes: Array.from(element.classList)
+      classes: Array.from(element.classList),
     });
-    
+
     if (historicModeActive) {
       // Request image if we don't have it yet
       if (!historicFlagImageUrl) {
@@ -526,15 +965,19 @@
         // Wait for image URL before applying
         return;
       }
-      
+
       // Force element to be visible (rewards icon is usually hidden)
       element.style.setProperty("display", "block", "important");
       element.style.setProperty("visibility", "visible", "important");
       element.style.setProperty("opacity", "1", "important");
-      
+
       // Apply the image URL from Python
       element.classList.add("lu-historic-flag-active");
-      element.style.setProperty("background-image", `url("${historicFlagImageUrl}")`, "important");
+      element.style.setProperty(
+        "background-image",
+        `url("${historicFlagImageUrl}")`,
+        "important"
+      );
       element.style.setProperty("background-repeat", "no-repeat", "important");
       element.style.setProperty("background-size", "contain", "important");
       element.style.setProperty("height", "32px", "important");
@@ -547,11 +990,11 @@
       element.style.setProperty("-webkit-user-select", "none", "important");
       element.style.setProperty("list-style-type", "none", "important");
       element.style.setProperty("content", " ", "important");
-      
-      log("info", "Historic flag shown on rewards element", { 
+
+      log("info", "Historic flag shown on rewards element", {
         url: historicFlagImageUrl,
         display: element.style.display,
-        visibility: element.style.visibility
+        visibility: element.style.visibility,
       });
     } else {
       // Historic mode is inactive - hide the flag
@@ -559,16 +1002,16 @@
       log("info", "Historic flag hidden on rewards element");
     }
   }
-  
+
   function hideFlagOnElement(element) {
     if (!element) return;
-    
+
     // Only remove our flag class
     element.classList.remove("lu-historic-flag-active");
-    
+
     // Check if random flag is active - if so, don't remove shared styles
     const hasRandomFlag = element.classList.contains("lu-random-flag-active");
-    
+
     if (!hasRandomFlag) {
       // No other flag is active - safe to remove all styles
       element.style.removeProperty("background-image");
@@ -598,24 +1041,24 @@
       // Don't remove other styles as random flag needs them
     }
   }
-  
+
   async function init() {
     log("info", "Initializing LU-HistoricMode plugin");
-    
+
     // Load bridge port before initializing socket
     await loadBridgePort();
-    
+
     // Ensure historic mode starts as inactive
     historicModeActive = false;
-    
+
     // Inject CSS
     const style = document.createElement("style");
     style.textContent = CSS_RULES;
     document.head.appendChild(style);
-    
+
     // Setup WebSocket bridge
     setupBridgeSocket();
-    
+
     // Watch for DOM changes to find rewards element (only when in ChampSelect)
     const observer = new MutationObserver(() => {
       // Only try to update if in ChampSelect and historic mode is active
@@ -623,20 +1066,20 @@
         updateHistoricFlag();
       }
     });
-    
+
     observer.observe(document.body, {
       childList: true,
       subtree: true,
     });
-    
+
     // Request historic flag image on init (for when it's needed)
     requestHistoricFlagImage();
-    
+
     // Don't try to update flag on init - wait for phase-change message to know if we're in ChampSelect
-    
+
     log("info", "LU-HistoricMode plugin initialized");
   }
-  
+
   // Start when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
@@ -644,4 +1087,3 @@
     init();
   }
 })();
-
