@@ -1,11 +1,11 @@
 /**
- * @name Rose-HistoricMode
+ * @name ROSE-HistoricMode
  * @author Rose Team
  * @description Historic mode for Pengu Loader
  * @link https://github.com/FlorentTariolle/Rose-HistoricMode
  */
 (function initHistoricMode() {
-  const LOG_PREFIX = "[Rose-HistoricMode]";
+  const LOG_PREFIX = "[ROSE-HistoricMode]";
   const REWARDS_SELECTOR = ".skin-selection-item-information.loyalty-reward-icon--rewards";
   const HISTORIC_FLAG_ASSET_PATH = "historic_flag.png";
   const SHOW_SKIN_NAME_ID = "historic-popup-layer";
