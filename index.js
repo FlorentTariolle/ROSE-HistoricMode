@@ -588,6 +588,8 @@
       width: "auto",
       display: "inline-block",
       boxSizing: "border-box",
+      paddingLeft: "35px",
+      paddingRight: "35px",
     });
 
     // Create paragraph with skin name (preserving case)
