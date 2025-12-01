@@ -8,7 +8,7 @@
   const LOG_PREFIX = "[Rose-HistoricMode]";
   const REWARDS_SELECTOR = ".skin-selection-item-information.loyalty-reward-icon--rewards";
   const HISTORIC_FLAG_ASSET_PATH = "historic_flag.png";
-  
+  const SHOW_SKIN_NAME_ID = "historic-popup-layer";
   // WebSocket bridge for receiving historic state from Python
   let BRIDGE_PORT = 50000; // Default, will be updated from /bridge-port endpoint
   let BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
@@ -302,6 +302,7 @@
   }
   
   function handleHistoricStateUpdate(data) {
+    handleHistoricSkinNameUpdate(data);
     const wasActive = historicModeActive;
     historicModeActive = data.active === true;
     
@@ -364,9 +365,82 @@
     
     // Only log if we're actually in ChampSelect (to avoid spam before entering)
     log("debug", "Rewards element not found anywhere");
+    removeHistoricSkinName();
     return null;
   }
-  
+  function showSkinName(skinName) {
+    const id = SHOW_SKIN_NAME_ID;
+    let text = skinName;
+    // 如果已存在同 id 的元素，就直接更新内容并重置定时器
+    let popup = document.getElementById(id);
+    if (popup) {
+      popup.querySelector('.popup-text').textContent = text;
+      resetTimer(popup);
+      return;
+    }
+
+    // 创建容器
+    popup = document.createElement('div');
+    popup.id = id;
+
+    // 设置样式
+    Object.assign(popup.style, {
+      position: 'fixed',
+      bottom:'10%',
+      left: '55%',
+      zIndex: '999999',
+      background: '#1e2328',
+      color: '#b2a580',
+      padding: '7px 10px',
+      borderRadius: '4px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+      fontSize: '14px',
+      lineHeight: '1.4',
+      display: 'flex',
+      alignItems: 'center',
+      maxWidth: '300px',
+      fontWeight: 'bolder'
+    });
+
+    // 文本
+    const textSpan = document.createElement('span');
+    textSpan.className = 'popup-text';
+    textSpan.textContent = text;
+    popup.appendChild(textSpan);
+
+    // 关闭按钮
+    const closeBtn = document.createElement('span');
+    closeBtn.textContent = 'x';
+    Object.assign(closeBtn.style, {
+      marginLeft: '10px',
+      cursor: 'pointer',
+      fontWeight: 'bold'
+    });
+    closeBtn.onclick = () => popup.remove();
+    popup.appendChild(closeBtn);
+
+    // 添加到页面rcp-fe-viewport-root
+    document.body.appendChild(popup);
+
+    // 自动关闭定时器
+    resetTimer(popup);
+
+    function resetTimer(el) {
+      if (el._timer) clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.remove(), 125000); // 125秒后移除
+    }
+  }
+
+  const handleHistoricSkinNameUpdate = (payload)=>{
+    if(payload.historicSkinName && payload.historicSkinName !== "None"){
+      showSkinName(payload.historicSkinName);
+    } else {
+      removeHistoricSkinName();
+    }
+  }
+  function removeHistoricSkinName() {
+    document.getElementById(SHOW_SKIN_NAME_ID)?.remove();
+  }
   function requestHistoricFlagImage() {
     // Request historic flag image from Python (same way as Elementalist Lux icons)
     if (!historicFlagImageUrl && !pendingHistoricFlagRequest.has(HISTORIC_FLAG_ASSET_PATH)) {
