@@ -371,7 +371,7 @@
   function showSkinName(skinName) {
     const id = SHOW_SKIN_NAME_ID;
     let text = skinName;
-    // 如果已存在同 id 的元素，就直接更新内容并重置定时器
+    // If an element with the same id already exists, directly update the content and reset the timer
     let popup = document.getElementById(id);
     if (popup) {
       popup.querySelector('.popup-text').textContent = text;
@@ -379,11 +379,11 @@
       return;
     }
 
-    // 创建容器
+    // Create container
     popup = document.createElement('div');
     popup.id = id;
 
-    // 设置样式
+    // Set styles
     Object.assign(popup.style, {
       position: 'fixed',
       bottom:'10%',
@@ -402,13 +402,13 @@
       fontWeight: 'bolder'
     });
 
-    // 文本
+    // Text
     const textSpan = document.createElement('span');
     textSpan.className = 'popup-text';
     textSpan.textContent = text;
     popup.appendChild(textSpan);
 
-    // 关闭按钮
+    // Close button
     const closeBtn = document.createElement('span');
     closeBtn.textContent = 'x';
     Object.assign(closeBtn.style, {
@@ -419,15 +419,15 @@
     closeBtn.onclick = () => popup.remove();
     popup.appendChild(closeBtn);
 
-    // 添加到页面rcp-fe-viewport-root
+    // Add to page rcp-fe-viewport-root
     document.body.appendChild(popup);
 
-    // 自动关闭定时器
+    // Auto close timer
     resetTimer(popup);
 
     function resetTimer(el) {
       if (el._timer) clearTimeout(el._timer);
-      el._timer = setTimeout(() => el.remove(), 125000); // 125秒后移除
+      el._timer = setTimeout(() => el.remove(), 125000); // Remove after 125 seconds
     }
   }
 
