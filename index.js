@@ -407,6 +407,239 @@
     removeHistoricSkinName();
     return null;
   }
+
+  // Inject CSS styles for lol-uikit-dialog-frame
+  function injectDialogFrameStyles() {
+    const styleId = "rose-historic-mode-dialog-frame-styles";
+    if (document.getElementById(styleId)) {
+      return; // Styles already injected
+    }
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to right, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to left, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to top, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to bottom, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom.disabled {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to top, #39393e 0, #1e282d 5px, #1e282d 100%) 1 stretch;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled > .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom.disabled > .lol-uikit-dialog-frame-sub-border::before {
+        top: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-horizontal-disabled.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled > .lol-uikit-dialog-frame-sub-border::after,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom.disabled > .lol-uikit-dialog-frame-sub-border::after {
+        bottom: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-horizontal-disabled.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::after,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom .lol-uikit-dialog-frame-sub-border::after {
+        left: 12px;
+        width: calc(100% - 24px);
+        height: 0;
+        border-width: 4px 4px 0 4px;
+        border-image-width: 4px 4px 0 4px;
+        border-image-slice: 4 4 0 4;
+        border-image-repeat: stretch;
+        border-style: solid;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom .lol-uikit-dialog-frame-sub-border::before {
+        top: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-horizontal.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::after,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom .lol-uikit-dialog-frame-sub-border::after {
+        bottom: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-horizontal.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left.disabled,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to right, #39393e 0, #1e282d 5px, #1e282d 100%) 1 stretch;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left.disabled > .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled > .lol-uikit-dialog-frame-sub-border::before {
+        left: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-vertical-disabled.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left.disabled > .lol-uikit-dialog-frame-sub-border::after,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled > .lol-uikit-dialog-frame-sub-border::after {
+        right: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-vertical-disabled.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left .lol-uikit-dialog-frame-sub-border::after,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right .lol-uikit-dialog-frame-sub-border::after {
+        top: 12px;
+        height: calc(100% - 24px);
+        width: 0;
+        border-width: 4px 4px 4px 0;
+        border-image-width: 4px 4px 4px 0;
+        border-image-slice: 4 4 4 0;
+        border-image-repeat: stretch;
+        border-style: solid;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right .lol-uikit-dialog-frame-sub-border::before {
+        left: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-vertical.png");
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left .lol-uikit-dialog-frame-sub-border::after,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right .lol-uikit-dialog-frame-sub-border::after {
+        right: -6px;
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-vertical.png");
+      }
+      #${SHOW_SKIN_NAME_ID} lol-uikit-dialog-frame {
+        z-index: 0;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame {
+        position: relative;
+        background: #010a13;
+        box-shadow: 0 0 0 1px rgba(1,10,19,0.48);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame::before {
+        content: '';
+        position: absolute;
+        width: calc(100% + 4px);
+        height: calc(100% + 4px);
+        top: -2px;
+        left: -2px;
+        box-shadow: 0 0 10px 1px rgba(0,0,0,0.5);
+        pointer-events: none;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame .lol-uikit-dialog-frame-sub-border::before,
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame .lol-uikit-dialog-frame-sub-border::after {
+        content: '';
+        position: absolute;
+        display: flex;
+        box-sizing: border-box;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled > .lol-uikit-dialog-frame-sub-border::before {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-horizontal-disabled.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled > .lol-uikit-dialog-frame-sub-border::after {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-horizontal-disabled.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::before {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-horizontal.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::after {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-horizontal.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled > .lol-uikit-dialog-frame-sub-border::before {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-vertical-disabled.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled > .lol-uikit-dialog-frame-sub-border::after {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-vertical-disabled.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right .lol-uikit-dialog-frame-sub-border::before {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-secondary-vertical.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right .lol-uikit-dialog-frame-sub-border::after {
+        border-image-source: url("/fe/lol-uikit/images/sub-border-primary-vertical.png");
+        transform: rotate(180deg);
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.borderless .lol-uikit-dialog-frame-sub-border {
+        display: none;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame .lol-uikit-dialog-frame-close-button {
+        display: none;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame .lol-uikit-dialog-frame-close-button lol-uikit-close-button {
+        z-index: 10000000;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame .lol-uikit-dialog-frame-uikit-close-button {
+        display: none;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-icon .lol-uikit-dialog-frame-toast-close-button {
+        display: block;
+        height: 24px;
+        width: 24px;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: url("/fe/lol-uikit/images/close.png"), rgba(0,0,0,0.5);
+        cursor: pointer;
+        border-radius: 4px;
+        background-size: 75% 75%, 100% 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-icon .lol-uikit-dialog-frame-toast-close-button:hover {
+        background: url("/fe/lol-uikit/images/close.png"), rgba(10,20,40,0.5);
+        background-size: 75% 75%, 100% 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-icon.dismissable-icon-background .lol-uikit-dialog-frame-toast-close-button {
+        width: 24px;
+        height: 24px;
+        top: 8px;
+        right: 8px;
+        background-color: #0a1428;
+        background-size: 18px 18px;
+        background-position: center;
+        border-radius: 2px;
+        opacity: 0.8;
+        transition: opacity 0.05s ease-in-out;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-icon.dismissable-icon-background .lol-uikit-dialog-frame-toast-close-button:hover {
+        opacity: 1;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-close-button .lol-uikit-dialog-frame-close-button {
+        display: block;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-close-button .lol-uikit-dialog-frame-close-button::before {
+        content: '';
+        position: absolute;
+        width: 38px;
+        height: 68px;
+        top: -22px;
+        right: -22px;
+        background-image: url("/fe/lol-uikit/images/frame-button-close-top-down.png");
+        background-size: 38px 68px;
+        pointer-events: none;
+      }
+      #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-close-button .lol-uikit-dialog-frame-close-button lol-uikit-close-button {
+        display: block;
+        position: absolute;
+        top: -17px;
+        right: -17px;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function showSkinName(skinName) {
     const id = SHOW_SKIN_NAME_ID;
     let text = skinName;
@@ -420,6 +653,9 @@
       resetTimer(popup);
       return;
     }
+
+    // Inject dialog frame styles
+    injectDialogFrameStyles();
 
     // Create container
     popup = document.createElement("div");
@@ -467,6 +703,20 @@
       alignItems: "center",
       justifyContent: "center",
       width: "100%",
+    });
+
+    // Create lol-uikit-dialog-frame wrapper
+    let dialogFrame;
+    try {
+      dialogFrame = document.createElement("lol-uikit-dialog-frame");
+      dialogFrame.className = "lol-uikit-dialog-frame top dismissable-icon";
+    } catch (e) {
+      dialogFrame = document.createElement("div");
+      dialogFrame.className = "lol-uikit-dialog-frame top dismissable-icon";
+    }
+    Object.assign(dialogFrame.style, {
+      position: "relative",
+      display: "inline-block",
     });
 
     // Create lol-uikit-content-block element
@@ -580,16 +830,12 @@
     Object.assign(contentBlock.style, {
       WebkitUserSelect: "none",
       position: "relative",
-      background: "#010a13",
-      boxShadow: "0 0 0 1px rgba(1,10,19,0.48)",
-      border: "2px solid transparent",
-      borderImage:
-        "linear-gradient(to top, #785a28 0, #463714 50%, #463714 100%) 1 stretch",
+      background: "transparent",
       width: "auto",
       display: "inline-block",
       boxSizing: "border-box",
-      paddingLeft: "35px",
-      paddingRight: "35px",
+      paddingLeft: "25px",
+      paddingRight: "25px",
     });
 
     // Create paragraph with skin name (preserving case)
@@ -691,15 +937,9 @@
     );
     subBorder.style.setProperty("--plug-scrollable-color", "#785a28");
 
-    // Set regular CSS properties
+    // Set regular CSS properties (subBorder will be styled by CSS rules)
     Object.assign(subBorder.style, {
       WebkitUserSelect: "none",
-      position: "absolute",
-      top: "0",
-      left: "0",
-      right: "0",
-      bottom: "0",
-      pointerEvents: "none",
     });
 
     // Create before pseudo-element
@@ -724,12 +964,14 @@
 
     // Build the nested structure
     contentBlock.appendChild(pTag);
-    toastContent.appendChild(contentBlock);
-    toastContent.appendChild(subBorder);
+    dialogFrame.appendChild(contentBlock);
+    dialogFrame.appendChild(subBorder);
+    toastContent.appendChild(dialogFrame);
     toastBody.appendChild(toastContent);
 
     // Create close button (cross) in top right corner
     const closeBtn = document.createElement("span");
+    closeBtn.className = "lol-uikit-dialog-frame-toast-close-button";
     closeBtn.setAttribute("role", "button");
     closeBtn.setAttribute("aria-label", "Close");
 
@@ -843,7 +1085,7 @@
     });
 
     closeBtn.onclick = () => popup.remove();
-    toastBody.appendChild(closeBtn);
+    dialogFrame.appendChild(closeBtn);
 
     popup.appendChild(toastBody);
 
