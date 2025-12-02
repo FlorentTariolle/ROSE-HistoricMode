@@ -420,26 +420,21 @@
     style.textContent = `
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left,
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right {
-        border: 2px solid transparent;
-        border-image: linear-gradient(to right, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+        border: none;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right {
-        border: 2px solid transparent;
-        border-image: linear-gradient(to left, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+        border: none;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top,
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom {
-        border: 2px solid transparent;
-        border-image: linear-gradient(to top, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+        border: none;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top {
-        border: 2px solid transparent;
-        border-image: linear-gradient(to bottom, #785a28 0, #463714 50%, #463714 100%) 1 stretch;
+        border: none;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled,
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom.disabled {
-        border: 2px solid transparent;
-        border-image: linear-gradient(to top, #39393e 0, #1e282d 5px, #1e282d 100%) 1 stretch;
+        border: none;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.top.disabled > .lol-uikit-dialog-frame-sub-border::before,
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.bottom.disabled > .lol-uikit-dialog-frame-sub-border::before {
@@ -476,8 +471,7 @@
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left.disabled,
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled {
-        border: 2px solid transparent;
-        border-image: linear-gradient(to right, #39393e 0, #1e282d 5px, #1e282d 100%) 1 stretch;
+        border: none;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.left.disabled > .lol-uikit-dialog-frame-sub-border::before,
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.right.disabled > .lol-uikit-dialog-frame-sub-border::before {
