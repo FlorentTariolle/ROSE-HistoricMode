@@ -703,10 +703,10 @@
     let dialogFrame;
     try {
       dialogFrame = document.createElement("lol-uikit-dialog-frame");
-      dialogFrame.className = "lol-uikit-dialog-frame top dismissable-icon";
+      dialogFrame.className = "lol-uikit-dialog-frame top";
     } catch (e) {
       dialogFrame = document.createElement("div");
-      dialogFrame.className = "lol-uikit-dialog-frame top dismissable-icon";
+      dialogFrame.className = "lol-uikit-dialog-frame top";
     }
     Object.assign(dialogFrame.style, {
       position: "relative",
@@ -962,124 +962,6 @@
     dialogFrame.appendChild(subBorder);
     toastContent.appendChild(dialogFrame);
     toastBody.appendChild(toastContent);
-
-    // Create close button (cross) in top right corner
-    const closeBtn = document.createElement("span");
-    closeBtn.className = "lol-uikit-dialog-frame-toast-close-button";
-    closeBtn.setAttribute("role", "button");
-    closeBtn.setAttribute("aria-label", "Close");
-
-    // Set CSS custom properties
-    closeBtn.style.setProperty(
-      "--champion-preview-hover-animation-percentage",
-      "0%"
-    );
-    closeBtn.style.setProperty("--column-height", "95px");
-    closeBtn.style.setProperty(
-      "--font-display",
-      '"LoL Display","Times New Roman",Times,Baskerville,Georgia,serif'
-    );
-    closeBtn.style.setProperty(
-      "--font-body",
-      '"LoL Body",Arial,"Helvetica Neue",Helvetica,sans-serif'
-    );
-    closeBtn.style.setProperty("--plug-transform1", "scale(1) rotate(0deg)");
-    closeBtn.style.setProperty(
-      "--plug-transform2",
-      "scale(1.075) rotate(1deg)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-filter1",
-      "drop-shadow(0 0 0 rgb(66 60 40 / 0%))"
-    );
-    closeBtn.style.setProperty(
-      "--plug-filter2",
-      "drop-shadow(0 0 12px rgb(66 59 40 / 80%))"
-    );
-    closeBtn.style.setProperty("--plug-color1", "#423828");
-    closeBtn.style.setProperty("--plug-color2", "#fcf0d7");
-    closeBtn.style.setProperty(
-      "--plug-box-shadow1",
-      "0 0 0 rgb(66 58 40 / 0%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-box-shadow2",
-      "0 0 12px rgb(66 55 40 / 80%), inset 0 0 12px rgb(66 56 40 / 40%)"
-    );
-    closeBtn.style.setProperty("--plug-color-button", "#857a72");
-    closeBtn.style.setProperty("--plug-color-buttonDisabled", "#72655a");
-    closeBtn.style.setProperty("--plug-color-buttonHover", "#a89d8f");
-    closeBtn.style.setProperty(
-      "--plug-selected-item-border",
-      "2px solid #7d644b"
-    );
-    closeBtn.style.setProperty(
-      "--plug-selected-item-box-shadow",
-      "0 0 10px rgb(194 129 68 / 50%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-smoothGlow-box-shadow0",
-      "0 0 8px rgb(66 55 40 / 40%), 0 0 12px rgb(66 54 40 / 20%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-smoothGlow-box-shadow25",
-      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 57 40 / 10%), 0 0 30px rgb(66 55 40 / 20%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-smoothGlow-box-shadow50",
-      "0 0 12px rgb(66 56 40 / 60%), 0 0 20px rgb(66 54 40 / 30%), 0 0 30px rgb(66 55 40 / 10%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-smoothGlow-box-shadow75",
-      "0 0 10px rgb(66 55 40 / 50%), 0 0 16px rgb(66 56 40 / 10%), 0 0 30px rgb(66 54 40 / 20%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-smoothGlow-box-shadow100",
-      "0 0 8px rgb(66 58 40 / 40%), 0 0 12px rgb(66 56 40 / 20%)"
-    );
-    closeBtn.style.setProperty(
-      "--plug-search-input-border",
-      "1px solid #533e1c"
-    );
-    closeBtn.style.setProperty(
-      "--plug-search-inputFocus-border-color",
-      "#81602b"
-    );
-    closeBtn.style.setProperty(
-      "--plug-search-inputFocus-box-shadow",
-      "0 0 10px rgba(84, 58, 96, 0.3)"
-    );
-    closeBtn.style.setProperty("--plug-jsbutton-color", "#81602b");
-    closeBtn.style.setProperty(
-      "--plug-soft-text-glow-kda1",
-      "rgb(255 155 0) 0px 0px 17px"
-    );
-    closeBtn.style.setProperty(
-      "--plug-soft-text-glow-kda2",
-      "rgb(255 143 0 / 37%) 0px 0px 76px"
-    );
-    closeBtn.style.setProperty("--plug-scrollable-color", "#785a28");
-
-    // Set regular CSS properties
-    Object.assign(closeBtn.style, {
-      WebkitUserSelect: "none",
-      display: "block",
-      height: "24px",
-      width: "24px",
-      position: "absolute",
-      top: "8px",
-      right: "8px",
-      cursor: "pointer",
-      borderRadius: "4px",
-      background: 'url("/fe/lol-uikit/images/close.png"), rgba(10,20,40,0.5)',
-      backgroundSize: "75% 75%, 100% 100%",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      zIndex: "10",
-    });
-
-    closeBtn.onclick = () => popup.remove();
-    dialogFrame.appendChild(closeBtn);
 
     popup.appendChild(toastBody);
 
