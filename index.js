@@ -12,7 +12,7 @@
   const SHOW_SKIN_NAME_ID = "historic-popup-layer";
   // WebSocket bridge for receiving historic state from Python
   let BRIDGE_PORT = 50000; // Default, will be updated from /bridge-port endpoint
-  let BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
+  let BRIDGE_URL = `ws://127.0.0.1:${BRIDGE_PORT}`;
   const BRIDGE_PORT_STORAGE_KEY = "rose_bridge_port";
   const DISCOVERY_START_PORT = 50000;
   const DISCOVERY_END_PORT = 50010;
@@ -31,7 +31,7 @@
           // Verify cached port is still valid with shorter timeout
           try {
             const response = await fetch(
-              `http://localhost:${port}/bridge-port`,
+              `http://127.0.0.1:${port}/bridge-port`,
               {
                 signal: AbortSignal.timeout(200),
               }
@@ -41,7 +41,7 @@
               const fetchedPort = parseInt(portText.trim(), 10);
               if (!isNaN(fetchedPort) && fetchedPort > 0) {
                 BRIDGE_PORT = fetchedPort;
-                BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
+                BRIDGE_URL = `ws://127.0.0.1:${BRIDGE_PORT}`;
                 console.log(
                   `${LOG_PREFIX} Loaded bridge port from cache: ${BRIDGE_PORT}`
                 );
@@ -57,7 +57,7 @@
 
       // OPTIMIZATION: Try default port 50000 FIRST before scanning all ports
       try {
-        const response = await fetch(`http://localhost:50000/bridge-port`, {
+        const response = await fetch(`http://127.0.0.1:50000/bridge-port`, {
           signal: AbortSignal.timeout(200),
         });
         if (response.ok) {
@@ -65,7 +65,7 @@
           const fetchedPort = parseInt(portText.trim(), 10);
           if (!isNaN(fetchedPort) && fetchedPort > 0) {
             BRIDGE_PORT = fetchedPort;
-            BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
+            BRIDGE_URL = `ws://127.0.0.1:${BRIDGE_PORT}`;
             localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
             console.log(`${LOG_PREFIX} Loaded bridge port: ${BRIDGE_PORT}`);
             return true;
@@ -75,17 +75,36 @@
         // Port 50000 not ready, continue to discovery
       }
 
+      // OPTIMIZATION: Try fallback port 50001 SECOND
+      try {
+        const response = await fetch(`http://127.0.0.1:50001/bridge-port`, {
+          signal: AbortSignal.timeout(200),
+        });
+        if (response.ok) {
+          const portText = await response.text();
+          const fetchedPort = parseInt(portText.trim(), 10);
+          if (!isNaN(fetchedPort) && fetchedPort > 0) {
+            BRIDGE_PORT = fetchedPort;
+            BRIDGE_URL = `ws://127.0.0.1:${BRIDGE_PORT}`;
+            localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
+            console.log(`${LOG_PREFIX} Loaded bridge port: ${BRIDGE_PORT}`);
+            return true;
+          }
+        }
+      } catch (e) {
+        // Port 50001 not ready, continue to discovery
+      }
+
       // OPTIMIZATION: Parallel port discovery instead of sequential
-      // Start at DISCOVERY_START_PORT + 1 since 50000 was already tested above
       const portPromises = [];
       for (
-        let port = DISCOVERY_START_PORT + 1;
+        let port = DISCOVERY_START_PORT;
         port <= DISCOVERY_END_PORT;
         port++
       ) {
         portPromises.push(
-          fetch(`http://localhost:${port}/bridge-port`, {
-            signal: AbortSignal.timeout(300),
+          fetch(`http://127.0.0.1:${port}/bridge-port`, {
+            signal: AbortSignal.timeout(1000),
           })
             .then((response) => {
               if (response.ok) {
@@ -108,7 +127,7 @@
       for (const result of results) {
         if (result.status === "fulfilled" && result.value) {
           BRIDGE_PORT = result.value.port;
-          BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
+          BRIDGE_URL = `ws://127.0.0.1:${BRIDGE_PORT}`;
           localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
           console.log(`${LOG_PREFIX} Loaded bridge port: ${BRIDGE_PORT}`);
           return true;
@@ -116,16 +135,15 @@
       }
 
       // Fallback: try old /port endpoint (parallel as well)
-      // Start at DISCOVERY_START_PORT + 1 since 50000 was already tested above
       const legacyPromises = [];
       for (
-        let port = DISCOVERY_START_PORT + 1;
+        let port = DISCOVERY_START_PORT;
         port <= DISCOVERY_END_PORT;
         port++
       ) {
         legacyPromises.push(
-          fetch(`http://localhost:${port}/port`, {
-            signal: AbortSignal.timeout(300),
+          fetch(`http://127.0.0.1:${port}/port`, {
+            signal: AbortSignal.timeout(1000),
           })
             .then((response) => {
               if (response.ok) {
@@ -147,7 +165,7 @@
       for (const result of legacyResults) {
         if (result.status === "fulfilled" && result.value) {
           BRIDGE_PORT = result.value.port;
-          BRIDGE_URL = `ws://localhost:${BRIDGE_PORT}`;
+          BRIDGE_URL = `ws://127.0.0.1:${BRIDGE_PORT}`;
           localStorage.setItem(BRIDGE_PORT_STORAGE_KEY, String(BRIDGE_PORT));
           console.log(
             `${LOG_PREFIX} Loaded bridge port (legacy): ${BRIDGE_PORT}`
@@ -214,8 +232,8 @@
       level === "error"
         ? console.error
         : level === "warn"
-        ? console.warn
-        : console.log;
+          ? console.warn
+          : console.log;
     consoleMethod(`${LOG_PREFIX} ${message}`, data || "");
   }
 
@@ -322,7 +340,11 @@
 
   function handleLocalAssetUrl(data) {
     const assetPath = data.assetPath;
-    const url = data.url;
+    let url = data.url;
+    // Fix: Ensure we use 127.0.0.1 for asset URLs to match the bridge connection
+    if (url && typeof url === 'string') {
+      url = url.replace('localhost', '127.0.0.1');
+    }
 
     if (assetPath === HISTORIC_FLAG_ASSET_PATH && url) {
       historicFlagImageUrl = url;
@@ -971,19 +993,19 @@
       if (!isInChampSelect) {
         return null;
       }
-      
+
       // Find the carousel container to match its stacking context (same as random skin button)
       const carouselContainer = document.querySelector(".skin-selection-carousel-container");
       if (carouselContainer) {
         return carouselContainer;
       }
-      
+
       // Fallback: find the carousel itself
       const carousel = document.querySelector(".skin-selection-carousel");
       if (carousel) {
         return carousel;
       }
-      
+
       // Last fallback: find the main champ select container and then div.visible
       const mainContainer = document.querySelector(".champion-select-main-container");
       if (mainContainer) {
@@ -992,7 +1014,7 @@
           return visibleDiv;
         }
       }
-      
+
       return null;
     }
 
@@ -1004,23 +1026,23 @@
       if (containerComputedStyle.position === 'static') {
         targetContainer.style.position = 'relative';
       }
-      
+
       // Get container's position relative to viewport
       const containerRect = targetContainer.getBoundingClientRect();
-      
+
       // Calculate position relative to container (convert from fixed to absolute)
       // The original position is: bottom: calc(10% + 200px), left: 50%
       const viewportHeight = window.innerHeight;
       const bottomOffset = viewportHeight * 0.1 + 200; // 10% + 200px
       const topPosition = viewportHeight - bottomOffset;
-      
+
       // Update styles for absolute positioning relative to container
       popup.style.position = "absolute";
       popup.style.bottom = "auto";
       popup.style.top = `${topPosition - containerRect.top}px`;
       popup.style.left = "50%";
       popup.style.transform = "translate(-50%, 0)";
-      
+
       targetContainer.appendChild(popup);
     } else {
       // Fallback: append to body if container not found
