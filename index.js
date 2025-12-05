@@ -661,7 +661,7 @@
       bottom: "calc(10% + 200px)",
       left: "50%",
       transform: "translate(-50%, 0)",
-      zIndex: "999999",
+      zIndex: "0",
       background: "transparent",
       color: "#b2a580",
       padding: "0",
@@ -965,8 +965,67 @@
 
     popup.appendChild(toastBody);
 
-    // Add to page rcp-fe-viewport-root
-    document.body.appendChild(popup);
+    // Find the same container as the random skin button to match stacking context
+    function findNamePanelContainer() {
+      // Only try to find container when in ChampSelect
+      if (!isInChampSelect) {
+        return null;
+      }
+      
+      // Find the carousel container to match its stacking context (same as random skin button)
+      const carouselContainer = document.querySelector(".skin-selection-carousel-container");
+      if (carouselContainer) {
+        return carouselContainer;
+      }
+      
+      // Fallback: find the carousel itself
+      const carousel = document.querySelector(".skin-selection-carousel");
+      if (carousel) {
+        return carousel;
+      }
+      
+      // Last fallback: find the main champ select container and then div.visible
+      const mainContainer = document.querySelector(".champion-select-main-container");
+      if (mainContainer) {
+        const visibleDiv = mainContainer.querySelector("div.visible");
+        if (visibleDiv) {
+          return visibleDiv;
+        }
+      }
+      
+      return null;
+    }
+
+    // Try to append to the same container as random skin button
+    const targetContainer = findNamePanelContainer();
+    if (targetContainer) {
+      // Ensure container has positioning context
+      const containerComputedStyle = window.getComputedStyle(targetContainer);
+      if (containerComputedStyle.position === 'static') {
+        targetContainer.style.position = 'relative';
+      }
+      
+      // Get container's position relative to viewport
+      const containerRect = targetContainer.getBoundingClientRect();
+      
+      // Calculate position relative to container (convert from fixed to absolute)
+      // The original position is: bottom: calc(10% + 200px), left: 50%
+      const viewportHeight = window.innerHeight;
+      const bottomOffset = viewportHeight * 0.1 + 200; // 10% + 200px
+      const topPosition = viewportHeight - bottomOffset;
+      
+      // Update styles for absolute positioning relative to container
+      popup.style.position = "absolute";
+      popup.style.bottom = "auto";
+      popup.style.top = `${topPosition - containerRect.top}px`;
+      popup.style.left = "50%";
+      popup.style.transform = "translate(-50%, 0)";
+      
+      targetContainer.appendChild(popup);
+    } else {
+      // Fallback: append to body if container not found
+      document.body.appendChild(popup);
+    }
 
     // Auto close timer
     resetTimer(popup);
