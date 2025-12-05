@@ -33,7 +33,7 @@
             const response = await fetch(
               `http://127.0.0.1:${port}/bridge-port`,
               {
-                signal: AbortSignal.timeout(200),
+                signal: AbortSignal.timeout(50),
               }
             );
             if (response.ok) {
@@ -58,7 +58,7 @@
       // OPTIMIZATION: Try default port 50000 FIRST before scanning all ports
       try {
         const response = await fetch(`http://127.0.0.1:50000/bridge-port`, {
-          signal: AbortSignal.timeout(200),
+          signal: AbortSignal.timeout(50),
         });
         if (response.ok) {
           const portText = await response.text();
@@ -78,7 +78,7 @@
       // OPTIMIZATION: Try fallback port 50001 SECOND
       try {
         const response = await fetch(`http://127.0.0.1:50001/bridge-port`, {
-          signal: AbortSignal.timeout(200),
+          signal: AbortSignal.timeout(50),
         });
         if (response.ok) {
           const portText = await response.text();
@@ -104,7 +104,7 @@
       ) {
         portPromises.push(
           fetch(`http://127.0.0.1:${port}/bridge-port`, {
-            signal: AbortSignal.timeout(1000),
+            signal: AbortSignal.timeout(100),
           })
             .then((response) => {
               if (response.ok) {
@@ -143,7 +143,7 @@
       ) {
         legacyPromises.push(
           fetch(`http://127.0.0.1:${port}/port`, {
-            signal: AbortSignal.timeout(1000),
+            signal: AbortSignal.timeout(100),
           })
             .then((response) => {
               if (response.ok) {
@@ -680,7 +680,7 @@
     // Set styles
     Object.assign(popup.style, {
       position: "fixed",
-      bottom: "calc(10% + 200px)",
+      bottom: "calc(10% + 250px)",
       left: "50%",
       transform: "translate(-50%, 0)",
       zIndex: "0",
@@ -1031,9 +1031,9 @@
       const containerRect = targetContainer.getBoundingClientRect();
 
       // Calculate position relative to container (convert from fixed to absolute)
-      // The original position is: bottom: calc(10% + 200px), left: 50%
+      // The original position is: bottom: calc(10% + 350px), left: 50%
       const viewportHeight = window.innerHeight;
-      const bottomOffset = viewportHeight * 0.1 + 200; // 10% + 200px
+      const bottomOffset = viewportHeight * 0.1 + 350; // 10% + 350px
       const topPosition = viewportHeight - bottomOffset;
 
       // Update styles for absolute positioning relative to container
