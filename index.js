@@ -680,7 +680,7 @@
     // Set styles
     Object.assign(popup.style, {
       position: "fixed",
-      bottom: "calc(10% + 250px)",
+      bottom: "calc(10% + 215px)",
       left: "50%",
       transform: "translate(-50%, 0)",
       zIndex: "0",
@@ -1033,7 +1033,7 @@
       // Calculate position relative to container (convert from fixed to absolute)
       // The original position is: bottom: calc(10% + 350px), left: 50%
       const viewportHeight = window.innerHeight;
-      const bottomOffset = viewportHeight * 0.1 + 350; // 10% + 350px
+      const bottomOffset = viewportHeight * 0.1 + 265; // 10% + 265px
       const topPosition = viewportHeight - bottomOffset;
 
       // Update styles for absolute positioning relative to container
