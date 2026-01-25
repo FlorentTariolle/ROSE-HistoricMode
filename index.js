@@ -399,7 +399,6 @@
         ".skin-selection-item-information.loyalty-reward-icon--rewards"
       );
       if (info) {
-        log("debug", "Found rewards element in selected skin item");
         return info;
       }
     }
@@ -407,7 +406,6 @@
     // Try direct selector
     const element = document.querySelector(REWARDS_SELECTOR);
     if (element) {
-      log("debug", "Found rewards element via direct selector");
       return element;
     }
 
@@ -418,14 +416,12 @@
       for (const item of items) {
         const info = item.querySelector(".skin-selection-item-information");
         if (info && info.classList.contains("loyalty-reward-icon--rewards")) {
-          log("debug", "Found rewards element in carousel item");
           return info;
         }
       }
     }
 
     // Only log if we're actually in ChampSelect (to avoid spam before entering)
-    log("debug", "Rewards element not found anywhere");
     removeHistoricSkinName();
     return null;
   }
@@ -1145,19 +1141,12 @@
 
     currentRewardsElement = element;
 
-    // Log element state for debugging
+    // Check element visibility (no logging to reduce spam)
     const computedStyle = window.getComputedStyle(element);
     const isVisible =
       computedStyle.display !== "none" &&
       computedStyle.visibility !== "hidden" &&
       computedStyle.opacity !== "0";
-    log("debug", "Found rewards element", {
-      display: computedStyle.display,
-      visibility: computedStyle.visibility,
-      opacity: computedStyle.opacity,
-      isVisible: isVisible,
-      classes: Array.from(element.classList),
-    });
 
     if (historicModeActive) {
       // Request image if we don't have it yet
