@@ -346,6 +346,9 @@
       }
     } else if (!isInChampSelect && wasInChampSelect) {
       log("debug", "Left ChampSelect phase - disabling plugin");
+      // Remove popup and reset flags
+      customModPopupActive = false;
+      removeHistoricSkinName();
       // Hide flag when leaving ChampSelect
       if (currentRewardsElement) {
         hideFlagOnElement(currentRewardsElement);
@@ -615,21 +618,22 @@
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-icon .lol-uikit-dialog-frame-toast-close-button {
         display: block;
-        height: 24px;
-        width: 24px;
+        height: 16px;
+        width: 16px;
         position: absolute;
-        top: 8px;
-        right: 8px;
-        background: url("/fe/lol-uikit/images/close.png"), rgba(0,0,0,0.5);
+        top: 2px;
+        right: 2px;
+        background: url("/fe/lol-uikit/images/close.png"), rgba(0,0,0,0.7);
         cursor: pointer;
-        border-radius: 4px;
-        background-size: 75% 75%, 100% 100%;
+        border-radius: 50%;
+        background-size: 70% 70%, 100% 100%;
         background-position: center;
         background-repeat: no-repeat;
+        z-index: 10;
       }
       #${SHOW_SKIN_NAME_ID} .lol-uikit-dialog-frame.dismissable-icon .lol-uikit-dialog-frame-toast-close-button:hover {
-        background: url("/fe/lol-uikit/images/close.png"), rgba(10,20,40,0.5);
-        background-size: 75% 75%, 100% 100%;
+        background: url("/fe/lol-uikit/images/close.png"), rgba(200,50,50,0.8);
+        background-size: 70% 70%, 100% 100%;
         background-position: center;
         background-repeat: no-repeat;
       }
@@ -741,10 +745,10 @@
     let dialogFrame;
     try {
       dialogFrame = document.createElement("lol-uikit-dialog-frame");
-      dialogFrame.className = "lol-uikit-dialog-frame top";
+      dialogFrame.className = "lol-uikit-dialog-frame top dismissable-icon";
     } catch (e) {
       dialogFrame = document.createElement("div");
-      dialogFrame.className = "lol-uikit-dialog-frame top";
+      dialogFrame.className = "lol-uikit-dialog-frame top dismissable-icon";
     }
     Object.assign(dialogFrame.style, {
       position: "relative",
@@ -994,10 +998,19 @@
     });
     subBorder.appendChild(afterElement);
 
+    // Close button — lets the user dismiss the popup and cancel injection
+    const closeBtn = document.createElement("div");
+    closeBtn.className = "lol-uikit-dialog-frame-toast-close-button";
+    closeBtn.addEventListener("click", () => {
+      removeHistoricSkinName();
+      dismissActivePopup();
+    });
+
     // Build the nested structure
     contentBlock.appendChild(pTag);
     dialogFrame.appendChild(contentBlock);
     dialogFrame.appendChild(subBorder);
+    dialogFrame.appendChild(closeBtn);
     toastContent.appendChild(dialogFrame);
     toastBody.appendChild(toastContent);
 
@@ -1084,6 +1097,15 @@
 
   function handleCustomModStateUpdate(data) {
     if (data.active && data.modName) {
+      // Only show popup if the user is currently viewing the mod's target skin
+      const currentSkinId = Number((window.__roseSkinState || {}).skinId);
+      const modSkinId = data.skinId ? Number(data.skinId) : null;
+      if (modSkinId && currentSkinId && modSkinId !== currentSkinId) {
+        // User already navigated away — don't show popup
+        customModPopupActive = false;
+        removeHistoricSkinName();
+        return;
+      }
       customModPopupActive = true;
       showSkinName(data.modName);
     } else {
@@ -1101,6 +1123,19 @@
   }
   function removeHistoricSkinName() {
     document.getElementById(SHOW_SKIN_NAME_ID)?.remove();
+  }
+
+  function dismissActivePopup() {
+    // Send the right dismiss message depending on what triggered the popup
+    const msgType = customModPopupActive ? "dismiss-custom-mod" : "dismiss-historic";
+    customModPopupActive = false;
+    historicModeActive = false;
+
+    if (bridgeReady && bridgeSocket && bridgeSocket.readyState === WebSocket.OPEN) {
+      bridgeSocket.send(JSON.stringify({ type: msgType, timestamp: Date.now() }));
+    } else {
+      bridgeQueue.push(JSON.stringify({ type: msgType, timestamp: Date.now() }));
+    }
   }
   function requestHistoricFlagImage() {
     // Request historic flag image from Python (same way as Elementalist Lux icons)
