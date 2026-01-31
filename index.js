@@ -200,6 +200,7 @@
   }
 
   let historicModeActive = false;
+  let customModPopupActive = false; // Track if popup was shown by custom mod
   let currentRewardsElement = null;
   let historicFlagImageUrl = null; // HTTP URL from Python
   const pendingHistoricFlagRequest = new Map(); // Track pending requests
@@ -318,6 +319,10 @@
   function handleBridgeMessage(payload) {
     if (payload.type === "historic-state") {
       handleHistoricStateUpdate(payload);
+    } else if (payload.type === "custom-mod-state") {
+      handleCustomModStateUpdate(payload);
+    } else if (payload.type === "skin-state") {
+      handleSkinStateUpdate(payload);
     } else if (payload.type === "local-asset-url") {
       handleLocalAssetUrl(payload);
     } else if (payload.type === "phase-change") {
@@ -1076,6 +1081,24 @@
       removeHistoricSkinName();
     }
   };
+
+  function handleCustomModStateUpdate(data) {
+    if (data.active && data.modName) {
+      customModPopupActive = true;
+      showSkinName(data.modName);
+    } else {
+      customModPopupActive = false;
+      removeHistoricSkinName();
+    }
+  }
+
+  function handleSkinStateUpdate(data) {
+    // When the user hovers a different skin, hide the custom mod popup
+    if (customModPopupActive) {
+      customModPopupActive = false;
+      removeHistoricSkinName();
+    }
+  }
   function removeHistoricSkinName() {
     document.getElementById(SHOW_SKIN_NAME_ID)?.remove();
   }
